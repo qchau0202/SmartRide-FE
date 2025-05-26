@@ -1,0 +1,32 @@
+export const demoDrivers = [
+  {
+    id: 1,
+    name: "Bao Nguyen",
+    email: "bao.nguyen@email.com",
+    phone: "+84 905 555 555",
+    avatar: "https://avatar.iran.liara.run/public/8",
+    car: "Toyota Vios (White)",
+    license: "51A-123.45",
+    createdAt: "2024-05-01",
+  },
+  {
+    id: 2,
+    name: "Tuan Anh",
+    email: "tuan.anh@email.com",
+    phone: "+84 906 666 666",
+    avatar: "https://avatar.iran.liara.run/public/9",
+    car: "Honda City (Black)",
+    license: "51B-678.90",
+    createdAt: "2024-05-02",
+  },
+  {
+    id: 3,
+    name: "Mai Lan",
+    email: "mai.lan@email.com",
+    phone: "+84 907 777 777",
+    avatar: "https://avatar.iran.liara.run/public/10",
+    car: "Hyundai Accent (Silver)",
+    license: "51C-246.80",
+    createdAt: "2024-05-03",
+  },
+];
