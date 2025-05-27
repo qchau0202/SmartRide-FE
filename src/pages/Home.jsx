@@ -1,11 +1,17 @@
 import Customer from "../components/Customer";
 import Driver from "../components/Driver";
-import { useSearchParams } from "react-router-dom";
-
+import { getCurrentUser } from "../services/api";
+import { useEffect, useState } from "react";
 const Home = () => {
-  const [searchParams] = useSearchParams();
-  const role = searchParams.get("role") || "customer";
-  return <>{role === "driver" ? <Driver /> : <Customer />}</>;
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await getCurrentUser();
+      setUser(res.data.user);
+    };
+    fetchUser();
+  }, []);
+  return <>{user?.role === "driver" ? <Driver /> : <Customer />}</>;
 };
 
 export default Home;

@@ -1,16 +1,91 @@
 import { useState } from "react";
-import { Input, DatePicker, TimePicker, Button } from "antd";
-import { FaCalendarAlt, FaClock, FaExchangeAlt } from "react-icons/fa";
+import { Select, DatePicker, TimePicker, Button, Space } from "antd";
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaExchangeAlt,
+  FaMoneyBillWave,
+  FaCreditCard,
+  FaUniversity,
+} from "react-icons/fa";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import { bookRide } from "../../services/api";
+import { toast } from "react-hot-toast";
+const locationPairs = [
+  { pickup: "District 1", dropoff: "District 3" },
+  { pickup: "District 8", dropoff: "Ton Duc Thang University" },
+];
 
 const SelectDestination = () => {
-  const [pickup, setPickup] = useState("");
-  const [dropoff, setDropoff] = useState("");
+  const [pickup, setPickup] = useState(locationPairs[0].pickup);
+  const [dropoff, setDropoff] = useState(locationPairs[0].dropoff);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [date, setDate] = useState(dayjs());
+  const [time, setTime] = useState(dayjs());
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSwitch = () => {
     setPickup(dropoff);
     setDropoff(pickup);
   };
+
+  const handleBookRide = async () => {
+    if (!pickup || !dropoff || !date || !time || !paymentMethod) {
+      toast.error("Please select all fields before booking.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const datetime = date
+        .hour(time.hour())
+        .minute(time.minute())
+        .second(0)
+        .toISOString();
+      let fare = 0;
+      if (
+        (pickup === "District 1" && dropoff === "District 3") ||
+        (pickup === "District 3" && dropoff === "District 1")
+      ) {
+        fare = 50000;
+      } else if (
+        (pickup === "District 8" && dropoff === "Ton Duc Thang University") ||
+        (pickup === "Ton Duc Thang University" && dropoff === "District 8")
+      ) {
+        fare = 80000;
+      } else {
+        fare = 60000; // fallback
+      }
+      const data = { pickup, dropoff, datetime, paymentMethod, fare };
+      console.log("Booking data sent to backend:", data);
+      await bookRide(data);
+      toast.success("Ride booked successfully!");
+      navigate("/booking?status=driver-pending");
+    } catch (err) {
+      toast.error(err.message || "Failed to book ride");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const paymentOptions = [
+    {
+      value: "cash",
+      label: "Cash",
+      icon: <FaMoneyBillWave className="text-emerald-500" />,
+    },
+    {
+      value: "card",
+      label: "Card",
+      icon: <FaCreditCard className="text-emerald-500" />,
+    },
+    {
+      value: "banking",
+      label: "Banking",
+      icon: <FaUniversity className="text-emerald-500" />,
+    },
+  ];
 
   return (
     <div className="flex flex-col space-y-8 p-6 w-4/5">
@@ -27,14 +102,16 @@ const SelectDestination = () => {
             >
               Pickup location
             </label>
-            <Input
+            <Select
               id="pickup"
-              placeholder="Enter your pickup location"
-              size="large"
-              className="font-medium"
-              aria-label="Pickup location"
               value={pickup}
-              onChange={(e) => setPickup(e.target.value)}
+              onChange={setPickup}
+              size="large"
+              className="w-full"
+              options={locationPairs.map((pair) => ({
+                value: pair.pickup,
+                label: pair.pickup,
+              }))}
             />
           </div>
           <Button
@@ -52,14 +129,16 @@ const SelectDestination = () => {
             >
               Dropoff location
             </label>
-            <Input
+            <Select
               id="dropoff"
-              placeholder="Enter your dropoff location"
-              size="large"
-              className="font-medium"
-              aria-label="Dropoff location"
               value={dropoff}
-              onChange={(e) => setDropoff(e.target.value)}
+              onChange={setDropoff}
+              size="large"
+              className="w-full"
+              options={locationPairs.map((pair) => ({
+                value: pair.dropoff,
+                label: pair.dropoff,
+              }))}
             />
           </div>
         </div>
@@ -74,7 +153,8 @@ const SelectDestination = () => {
             size="large"
             className="w-1/2"
             suffixIcon={<FaCalendarAlt className="text-emerald-500" />}
-            defaultValue={dayjs()}
+            value={date}
+            onChange={setDate}
             style={{ width: "100%" }}
             aria-label="Pickup date"
           />
@@ -82,13 +162,47 @@ const SelectDestination = () => {
             size="large"
             className="w-1/2"
             suffixIcon={<FaClock className="text-emerald-500" />}
-            defaultValue={dayjs()}
+            value={time}
+            onChange={setTime}
             style={{ width: "100%" }}
             aria-label="Pickup time"
           />
         </div>
         <span className="text-xs text-gray-400 mt-1 block">
           Choose your preferred date and time for pickup
+        </span>
+      </div>
+      {/* Payment Method */}
+      <div className="">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Payment Method
+        </label>
+        <Space.Compact style={{ display: "flex", width: "100%" }}>
+          {paymentOptions.map((option) => (
+            <Button
+              key={option.value}
+              type={paymentMethod === option.value ? "primary" : "default"}
+              onClick={() => setPaymentMethod(option.value)}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderColor:
+                  paymentMethod === option.value ? "#10b981" : undefined,
+                color: paymentMethod === option.value ? "#10b981" : undefined,
+                fontWeight: paymentMethod === option.value ? 600 : 400,
+                background:
+                  paymentMethod === option.value ? "#ECFDF5" : undefined,
+              }}
+            >
+              <span style={{ marginRight: 8 }}>{option.icon}</span>
+              <span>{option.label}</span>
+            </Button>
+          ))}
+        </Space.Compact>
+        <span className="text-xs text-gray-400 mt-1 block">
+          Select your preferred payment method
         </span>
       </div>
       {/* Action */}
@@ -98,12 +212,11 @@ const SelectDestination = () => {
           size="large"
           className="font-bold px-8"
           style={{ borderRadius: 12 }}
+          loading={loading}
+          onClick={handleBookRide}
         >
-          See prices
+          Find a ride
         </Button>
-        <span className="text-gray-500 text-sm border-b border-gray-300 pb-1 cursor-pointer hover:text-emerald-500 transition-colors">
-          Book a ride instantly!
-        </span>
       </div>
     </div>
   );

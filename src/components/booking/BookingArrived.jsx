@@ -1,20 +1,22 @@
+import { Button } from "antd";
 import { FaMapMarkerAlt, FaPhoneAlt, FaStar } from "react-icons/fa";
-import Map from "../Map";
 
-const DriverArrived = ({ driver }) => {
-  // Demo driver data if not provided
-  const demoDriver = {
+const BookingArrived = ({ driver, ride }) => {
+  const d = driver?.user || {
     name: "Alex Nguyen",
     avatar: "https://avatar.iran.liara.run/public/2",
-    car: "Toyota Vios (White)",
-    license: "51A-123.45",
     phone: "0901 234 567",
-    rating: 4.9,
   };
-  const d = driver || demoDriver;
+  const car = driver?.car || {
+    model: "Toyota Vios (White)",
+    licensePlate: "51A-123.45",
+  };
+  const rating = driver?.rating || 4.9;
+  const pickup = ride?.pickup || "-";
+  const dropoff = ride?.dropoff || "-";
 
   return (
-    <div className="grid grid-cols-4 h-full">
+    <div className="grid grid-cols-2 h-full">
       <div className="col-span-1 flex flex-col items-center justify-center h-full text-center space-y-8">
         <FaMapMarkerAlt className="text-emerald-500" size={72} />
         <div>
@@ -33,22 +35,36 @@ const DriverArrived = ({ driver }) => {
           />
           <div className="text-lg font-semibold text-gray-800">{d.name}</div>
           <div className="flex items-center text-yellow-500 text-base font-semibold">
-            <FaStar className="mr-1" /> {d.rating}
+            <FaStar className="mr-1" /> {rating}
           </div>
-          <div className="text-gray-600">{d.car}</div>
-          <div className="text-gray-500">{d.license}</div>
+          <div className="text-gray-600">{car.model}</div>
+          <div className="text-gray-500">{car.licensePlate}</div>
           <div className="flex items-center gap-2 text-gray-500">
             <FaPhoneAlt className="mr-1" /> {d.phone}
           </div>
+          <div className="flex items-center gap-2 text-gray-500 mt-2">
+            <FaMapMarkerAlt className="text-emerald-500" />
+            <span className="font-medium">
+              {pickup} → {dropoff}
+            </span>
+          </div>
         </div>
+        <Button
+          type="primary"
+          icon={<FaPhoneAlt />}
+          size="large"
+          className="font-bold px-8"
+          style={{ borderRadius: 12 }}
+          disabled
+        >
+          Contact Driver
+        </Button>
       </div>
-      <div className="col-span-3 flex justify-center items-center h-full w-full">
-        <div className="h-full w-full">
-          <Map />
-        </div>
+      <div className="col-span-1 flex justify-center items-center bg-emerald-500">
+        <img src="./bg_onGoing.png" alt="" className="w-3/4" />
       </div>
     </div>
   );
 };
 
-export default DriverArrived;
+export default BookingArrived;

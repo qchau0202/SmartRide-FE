@@ -28,3 +28,23 @@ api.interceptors.response.use(
 export const login = (data) => api.post("/auth/login", data);
 export const register = (data) => api.post("/auth/register", data);
 export const getCurrentUser = () => api.get("/auth/current");
+export const updateProfile = (data) => api.put("/auth/update", data);
+export const becomeDriver = (data) => api.post("/auth/become-driver", data);
+export const bookRide = (data) => api.post("/rides", data);
+export const getRides = () => api.get("/rides");
+export const acceptRide = (id) => api.patch(`/rides/${id}/accept`);
+export const rejectRide = (id) => api.patch(`/rides/${id}/reject`);
+export const getUserRides = () => api.get("/rides/history");
+export const getRideById = (id) => api.get(`/rides/${id}`);
+export const arriveRide = (id) => api.patch(`/rides/${id}/arrive`);
+export const completeRide = (id) => api.patch(`/rides/${id}/complete`);
+
+// Payment APIs
+export const createPayment = (data) => api.post("/payments", data);
+export const getPaymentById = (id) => api.get(`/payments/${id}`);
+export const getPayments = () => api.get("/payments");
+export const deletePayment = (id) => api.delete(`/payments/${id}`);
+
+// Admin APIs
+export const getAllCustomers = () => api.get("/customers");
+export const getAllDrivers = () => api.get("/drivers");

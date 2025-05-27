@@ -1,10 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, Checkbox } from "antd";
+import { register } from "../services/api";
+import { toast } from "react-hot-toast";
 
 const Register = () => {
-  const onFinish = (values) => {
-    // Handle register logic here
-    console.log("Register values:", values);
+  const navigate = useNavigate();
+
+  const onFinish = async (values) => {
+    try {
+      const { firstName, lastName, ...rest } = values;
+      const payload = {
+        ...rest,
+        name: `${firstName} ${lastName}`,
+      };
+      await register(payload);
+      toast.success("Registration successful!");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message || "Registration failed");
+    }
   };
 
   return (

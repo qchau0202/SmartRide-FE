@@ -1,9 +1,6 @@
 import { Button, Tag } from "antd";
-import {
-  FaMapMarkerAlt,
-  FaRegCalendarAlt,
-  FaRegCircle,
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaRegCalendarAlt, FaRegCircle } from "react-icons/fa";
+import { arriveRide, completeRide } from "../../services/api";
 
 const statusColors = {
   pending: "#f59e42", // orange
@@ -11,8 +8,41 @@ const statusColors = {
   rejected: "#ef4444", // red
 };
 
+const paymentLabels = {
+  cash: "Cash",
+  card: "Card",
+  banking: "Banking",
+};
+
 const BookingCard = ({ booking, onAccept, onReject }) => {
-  const { customer = {}, pickup, dropoff, datetime, status } = booking;
+  const {
+    customer = {},
+    pickup,
+    dropoff,
+    datetime,
+    status,
+    fare,
+    paymentMethod,
+    _id,
+  } = booking;
+
+  // Driver actions
+  const handleArrive = async () => {
+    try {
+      await arriveRide(_id);
+      window.location.reload(); // Or trigger a state update
+    } catch (err) {
+      alert(err.message || "Failed to mark as arrived");
+    }
+  };
+  const handleComplete = async () => {
+    try {
+      await completeRide(_id);
+      window.location.reload(); // Or trigger a state update
+    } catch (err) {
+      alert(err.message || "Failed to complete ride");
+    }
+  };
 
   return (
     <div className="flex bg-white rounded-lg shadow-md p-5 mb-4 hover:shadow-lg transition-all group">
@@ -59,8 +89,17 @@ const BookingCard = ({ booking, onAccept, onReject }) => {
             <div>
               <span className="font-medium text-gray-800">{dropoff}</span>
             </div>
+            <div className="mt-2 text-sm text-gray-500">
+              <span className="font-semibold">Fare:</span>{" "}
+              {fare?.toLocaleString()} VND
+            </div>
+            <div className="text-sm text-gray-500">
+              <span className="font-semibold">Payment:</span>{" "}
+              {paymentLabels[paymentMethod] || paymentMethod}
+            </div>
           </div>
         </div>
+        {/* Driver action buttons */}
         {status === "pending" && (
           <div className="flex items-center space-x-2">
             <Button
@@ -78,6 +117,30 @@ const BookingCard = ({ booking, onAccept, onReject }) => {
               onClick={onReject}
             >
               Reject
+            </Button>
+          </div>
+        )}
+        {status === "accepted" && (
+          <div className="flex items-center space-x-2">
+            <Button
+              type="primary"
+              className="bg-blue-500 border-blue-500 font-bold w-28"
+              style={{ borderRadius: 12 }}
+              onClick={handleArrive}
+            >
+              Arrived
+            </Button>
+          </div>
+        )}
+        {status === "onGoing" && (
+          <div className="flex items-center space-x-2">
+            <Button
+              type="primary"
+              className="bg-green-500 border-green-500 font-bold w-32"
+              style={{ borderRadius: 12 }}
+              onClick={handleComplete}
+            >
+              Complete Ride
             </Button>
           </div>
         )}

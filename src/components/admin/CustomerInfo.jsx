@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Avatar,
@@ -9,15 +9,26 @@ import {
   Space,
   Popconfirm,
   message,
+  Spin,
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { demoCustomers as initialCustomers } from "../../mock-data/demoCustomers";
+import { getAllCustomers } from "../../services/api";
 
 const CustomerInfo = () => {
-  const [customers, setCustomers] = useState(initialCustomers);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    getAllCustomers()
+      .then((res) => {
+        setCustomers(res.data.customers);
+      })
+      .catch(() => message.error("Failed to fetch customers"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleAdd = () => {
     setEditing(null);
@@ -32,28 +43,29 @@ const CustomerInfo = () => {
   };
 
   const handleDelete = (id) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
-    message.success("Customer deleted");
+    setCustomers((prev) => prev.filter((c) => c._id !== id));
+    message.success("Customer deleted (demo only)");
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
       if (editing) {
         setCustomers((prev) =>
-          prev.map((c) => (c.id === editing.id ? { ...c, ...values } : c))
+          prev.map((c) => (c._id === editing._id ? { ...c, ...values } : c))
         );
-        message.success("Customer updated");
+        message.success("Customer updated (demo only)");
       } else {
         setCustomers((prev) => [
           ...prev,
           {
             ...values,
-            id: Date.now(),
+            _id: Date.now(),
             avatar: values.avatar || "https://avatar.iran.liara.run/public/4",
             createdAt: new Date().toISOString().slice(0, 10),
+            user: { name: values.name, email: values.email },
           },
         ]);
-        message.success("Customer added");
+        message.success("Customer added (demo only)");
       }
       setModalOpen(false);
     });
@@ -62,30 +74,31 @@ const CustomerInfo = () => {
   const columns = [
     {
       title: "Avatar",
-      dataIndex: "avatar",
+      dataIndex: ["user", "avatar"],
       key: "avatar",
       render: (avatar) => <Avatar src={avatar} size={36} />,
     },
     {
       title: "Name",
-      dataIndex: "name",
+      dataIndex: ["user", "name"],
       key: "name",
       render: (name) => <span className="font-semibold">{name}</span>,
     },
     {
       title: "Email",
-      dataIndex: "email",
+      dataIndex: ["user", "email"],
       key: "email",
     },
     {
       title: "Phone",
-      dataIndex: "phone",
+      dataIndex: ["user", "phone"],
       key: "phone",
     },
     {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",
+      render: (createdAt) => createdAt?.slice(0, 10),
     },
     {
       title: "Actions",
@@ -101,8 +114,8 @@ const CustomerInfo = () => {
             Edit
           </Button>
           <Popconfirm
-            title="Delete this customer?"
-            onConfirm={() => handleDelete(record.id)}
+            title="Delete this customer? (demo only)"
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
@@ -133,13 +146,19 @@ const CustomerInfo = () => {
           Add Customer
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={customers.map((c) => ({ ...c, key: c.id }))}
-        pagination={{ pageSize: 8 }}
-        bordered
-        className="bg-white rounded-xl shadow"
-      />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={customers.map((c) => ({ ...c, key: c._id }))}
+          pagination={{ pageSize: 8 }}
+          bordered
+          className="bg-white rounded-xl shadow"
+        />
+      )}
       <Modal
         title={editing ? "Edit Customer" : "Add Customer"}
         open={modalOpen}

@@ -23,7 +23,7 @@ export const demoPayment = {
       { label: "Total", value: "$47.00" },
     ],
   },
-  paymentMethod: "Credit/Debit Card",
+  paymentMethod: "Card/Banking",
   delivery: {
     instant: true,
     method: "Instant e-Receipt",

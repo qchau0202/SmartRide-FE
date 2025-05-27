@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Avatar,
@@ -9,15 +9,26 @@ import {
   Space,
   Popconfirm,
   message,
+  Spin,
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { demoDrivers as initialDrivers } from "../../mock-data/demoDrivers";
+import { getAllDrivers } from "../../services/api";
 
 const DriverInfo = () => {
-  const [drivers, setDrivers] = useState(initialDrivers);
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    getAllDrivers()
+      .then((res) => {
+        setDrivers(res.data.drivers);
+      })
+      .catch(() => message.error("Failed to fetch drivers"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleAdd = () => {
     setEditing(null);
@@ -32,28 +43,30 @@ const DriverInfo = () => {
   };
 
   const handleDelete = (id) => {
-    setDrivers((prev) => prev.filter((d) => d.id !== id));
-    message.success("Driver deleted");
+    setDrivers((prev) => prev.filter((d) => d._id !== id));
+    message.success("Driver deleted (demo only)");
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
       if (editing) {
         setDrivers((prev) =>
-          prev.map((d) => (d.id === editing.id ? { ...d, ...values } : d))
+          prev.map((d) => (d._id === editing._id ? { ...d, ...values } : d))
         );
-        message.success("Driver updated");
+        message.success("Driver updated (demo only)");
       } else {
         setDrivers((prev) => [
           ...prev,
           {
             ...values,
-            id: Date.now(),
+            _id: Date.now(),
             avatar: values.avatar || "https://avatar.iran.liara.run/public/8",
             createdAt: new Date().toISOString().slice(0, 10),
+            user: { name: values.name, email: values.email },
+            car: { model: values.car, license: values.license },
           },
         ]);
-        message.success("Driver added");
+        message.success("Driver added (demo only)");
       }
       setModalOpen(false);
     });
@@ -62,40 +75,43 @@ const DriverInfo = () => {
   const columns = [
     {
       title: "Avatar",
-      dataIndex: "avatar",
+      dataIndex: ["user", "avatar"],
       key: "avatar",
       render: (avatar) => <Avatar src={avatar} size={36} />,
     },
     {
       title: "Name",
-      dataIndex: "name",
+      dataIndex: ["user", "name"],
       key: "name",
       render: (name) => <span className="font-semibold">{name}</span>,
     },
     {
       title: "Email",
-      dataIndex: "email",
+      dataIndex: ["user", "email"],
       key: "email",
     },
     {
       title: "Phone",
-      dataIndex: "phone",
+      dataIndex: ["user", "phone"],
       key: "phone",
     },
     {
       title: "Car",
-      dataIndex: "car",
+      dataIndex: ["car", "model"],
       key: "car",
+      render: (model, record) => record.car?.model || "-",
     },
     {
       title: "License",
-      dataIndex: "license",
+      dataIndex: ["car", "licensePlate"],
       key: "license",
+      render: (license, record) => record.car?.licensePlate || "-",
     },
     {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",
+      render: (createdAt) => createdAt?.slice(0, 10),
     },
     {
       title: "Actions",
@@ -111,8 +127,8 @@ const DriverInfo = () => {
             Edit
           </Button>
           <Popconfirm
-            title="Delete this driver?"
-            onConfirm={() => handleDelete(record.id)}
+            title="Delete this driver? (demo only)"
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
@@ -143,13 +159,19 @@ const DriverInfo = () => {
           Add Driver
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={drivers.map((d) => ({ ...d, key: d.id }))}
-        pagination={{ pageSize: 8 }}
-        bordered
-        className="bg-white rounded-xl shadow"
-      />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={drivers.map((d) => ({ ...d, key: d._id }))}
+          pagination={{ pageSize: 8 }}
+          bordered
+          className="bg-white rounded-xl shadow"
+        />
+      )}
       <Modal
         title={editing ? "Edit Driver" : "Add Driver"}
         open={modalOpen}

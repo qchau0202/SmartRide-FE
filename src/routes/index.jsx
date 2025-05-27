@@ -9,18 +9,37 @@ import AppLayout from "../layout/AppLayout";
 import AdminLayout from "../layout/AdminLayout";
 import Dashboard from "../pages/Dashboard";
 import Payment from "../pages/Payment";
+import ProtectedRoute from "./ProtectedRoute";
+import RideDetails from "../components/booking/RideDetails";
+import BookingHistory from "../components/booking/BookingHistory";
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/",
         element: <Home />,
       },
       {
-        path: "/booking",
+        path: "/booking/*",
         element: <Booking />,
+        children: [
+          {},
+          {
+            path: "booking-history/:rideId",
+            element: <RideDetails />,
+          },
+          {
+            path: "booking-history",
+            element: <BookingHistory />,
+          },
+        ],
       },
       {
         path: "/profile",
@@ -34,10 +53,14 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
-        path: "/admin/dashboard",
+        path: "dashboard",
         element: <Dashboard />,
       },
     ],

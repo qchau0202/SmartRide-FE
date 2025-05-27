@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import { FaRegClock } from "react-icons/fa";
 
-const DriverPending = ({ onCancel }) => {
+const BookingPending = ({ onCancel }) => {
   return (
     <div className="grid grid-cols-2 h-full">
       <div className="col-span-1 flex flex-col items-center justify-center h-full text-center space-y-8">
@@ -32,4 +32,4 @@ const DriverPending = ({ onCancel }) => {
   );
 };
 
-export default DriverPending;
+export default BookingPending;

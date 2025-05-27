@@ -1,10 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, Checkbox } from "antd";
+import { login } from "../services/api";
+import { toast } from "react-hot-toast";
 
 const Login = () => {
-  const onFinish = (values) => {
-    // Handle login logic here
-    console.log("Login values:", values);
+  const navigate = useNavigate();
+
+  const onFinish = async (values) => {
+    try {
+      const res = await login(values);
+      localStorage.setItem("token", res.data.token);
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message || "Login failed");
+    }
   };
 
   return (
